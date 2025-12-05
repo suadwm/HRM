@@ -105,6 +105,24 @@ class HierarchicalReasoningModel_ACTV1_Inner(nn.Module):
         self.config = config
         self.forward_dtype = getattr(torch, self.config.forward_dtype)
 
+        # --- 動態自調 config 參數 ---
+        # 1. One-step gradient override (優先最高)
+        if getattr(config, 'one_step_gradient', False):
+            self.config.H_cycles = 1
+            self.config.L_cycles = 0
+            self.config.halt_max_steps = 1
+        else:
+            # 2. 非 hierarchy 模式
+            if not getattr(config, 'use_hierarchy', True):
+                self.config.L_layers = 0
+                self.config.L_cycles = 0
+            # 3. 無 ACT，強制 halt_max_steps=1
+            if not getattr(config, 'use_act', True):
+                self.config.halt_max_steps = 1
+        # 4. 預設至少 H 層=1
+        if self.config.H_layers <= 0:
+            self.config.H_layers = 1
+
         # I/O
         self.embed_scale  = math.sqrt(self.config.hidden_size)
         embed_init_std = 1.0 / self.embed_scale

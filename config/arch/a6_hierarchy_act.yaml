@@ -1,0 +1,10 @@
+use_hierarchy: true
+use_act: true
+use_supervision: false
+one_step_gradient: false
+H_layers: 4
+L_layers: 4
+halt_max_steps: 16
+loss:
+  name: losses@ACTLossHead
+  loss_type: stablemax_cross_entropy
